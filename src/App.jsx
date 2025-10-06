@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import { useState } from "react"
-import Kaleidoscope from "./Kaleidoscope"
+import FlowField from "./FlowField"
 import Starfield from "./Starfield"
 import useAudio from "./useAudio"
 import Narration1 from "./assets/Narration1.wav"
@@ -65,10 +65,7 @@ export default function App() {
           <Starfield count={2500} depth={120} size={0.012} />
         </group>
 
-
-        <Kaleidoscope audioLevel={audioLevel} phase={0.0} scale={3.5} />
-        <Kaleidoscope audioLevel={audioLevel} phase={1.5} scale={3.7} />
-        <Kaleidoscope audioLevel={audioLevel} phase={3.0} scale={3.3} />
+        <FlowField audioLevel={audioLevel} />
       </Canvas>
 
       {/* Controls */}

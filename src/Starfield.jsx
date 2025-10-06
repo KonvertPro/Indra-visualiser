@@ -4,6 +4,7 @@ import * as THREE from "three"
 
 export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73", "#8ECCD9", "#A872C0"], size = 0.01 }) {
   const pointsRef = useRef()
+  const materialRef = useRef()
 
   const { positions, colorsArray } = useMemo(() => {
     const positions = new Float32Array(count * 3)
@@ -28,7 +29,14 @@ export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73
   useFrame((state) => {
     const t = state.clock.getElapsedTime()
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = t * 0.005
+      const speed = 0.0015
+      pointsRef.current.rotation.y += speed
+    }
+    if (materialRef.current) {
+      const baseSize = size
+      materialRef.current.size = baseSize
+      materialRef.current.opacity = 0.6
+      materialRef.current.needsUpdate = true
     }
   })
 
@@ -49,6 +57,7 @@ export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73
         />
       </bufferGeometry>
       <pointsMaterial
+        ref={materialRef}
         size={size}
         vertexColors
         transparent

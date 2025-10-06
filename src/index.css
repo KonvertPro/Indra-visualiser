@@ -30,10 +30,10 @@ body {
   content: "";
   position: absolute;
   inset: -15% -15% -15% -15%;
-  background: radial-gradient(60% 40% at 20% 30%, rgba(168, 114, 192, 0.30), transparent 60%),
-              radial-gradient(50% 35% at 80% 20%, rgba(142, 204, 217, 0.26), transparent 60%),
-              radial-gradient(55% 45% at 40% 75%, rgba(171, 255, 115, 0.26), transparent 60%),
-              radial-gradient(45% 35% at 70% 65%, rgba(117, 95, 157, 0.22), transparent 60%);
+  background: radial-gradient(60% 40% at 20% 30%, rgba(168, 114, 192, 0.22), transparent 60%),
+              radial-gradient(50% 35% at 80% 20%, rgba(142, 204, 217, 0.20), transparent 60%),
+              radial-gradient(55% 45% at 40% 75%, rgba(171, 255, 115, 0.20), transparent 60%),
+              radial-gradient(45% 35% at 70% 65%, rgba(117, 95, 157, 0.18), transparent 60%);
   filter: blur(40px) saturate(115%);
   animation: auroraShift 24s linear infinite;
   mix-blend-mode: screen;
