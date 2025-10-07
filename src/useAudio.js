@@ -1,95 +1,136 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
-export default function useAudio(initialTrack) {
-  const audioRef = useRef(null)
-  const [audioLevel, setAudioLevel] = useState(0)
-  const [track, setTrackState] = useState(initialTrack)
-  const [duration, setDuration] = useState(0)
-  const [currentTime, setCurrentTime] = useState(0)
+export default function useAudio(initialUrl) {
+  const audioRef = useRef(null)          // <audio> element (one per app)
+  const ctxRef = useRef(null)            // AudioContext (created on first play)
+  const srcNodeRef = useRef(null)        // MediaElementSourceNode (created once)
   const analyserRef = useRef(null)
   const dataArrayRef = useRef(null)
-  const audioCtxRef = useRef(null)
+  const rafIdRef = useRef(null)
 
+  const [audioLevel, setAudioLevel] = useState(0) // 0..1
+  const [duration, setDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
+
+  // Create the <audio> element once
   useEffect(() => {
-    // Create audio element
-    const audio = new Audio(initialTrack)
+    const audio = new Audio()
     audio.crossOrigin = "anonymous"
+    audio.preload = "auto"
+    audio.src = initialUrl
     audioRef.current = audio
 
-    // Setup Web Audio API context + analyser
-    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
-    const source = audioCtxRef.current.createMediaElementSource(audio)
-    analyserRef.current = audioCtxRef.current.createAnalyser()
-    analyserRef.current.fftSize = 256
-    const bufferLength = analyserRef.current.frequencyBinCount
-    dataArrayRef.current = new Uint8Array(bufferLength)
+    const onTime = () => setCurrentTime(audio.currentTime || 0)
+    const onMeta = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0)
 
-    source.connect(analyserRef.current)
-    analyserRef.current.connect(audioCtxRef.current.destination)
-
-    const onLoadedMetadata = () => {
-      setDuration(isFinite(audio.duration) ? audio.duration : 0)
-    }
-
-    const onTimeUpdate = () => {
-      setCurrentTime(audio.currentTime || 0)
-    }
-
-    audio.addEventListener("loadedmetadata", onLoadedMetadata)
-    audio.addEventListener("timeupdate", onTimeUpdate)
-
-    const tick = () => {
-      if (analyserRef.current && dataArrayRef.current) {
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current)
-        const avg = dataArrayRef.current.reduce((a, b) => a + b, 0) / dataArrayRef.current.length
-        setAudioLevel(avg / 255)
-      }
-      requestAnimationFrame(tick)
-    }
-    tick()
+    audio.addEventListener("timeupdate", onTime)
+    audio.addEventListener("loadedmetadata", onMeta)
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audio.removeEventListener("loadedmetadata", onLoadedMetadata)
-        audio.removeEventListener("timeupdate", onTimeUpdate)
-        audioRef.current = null
+      cancelAnimationFrame(rafIdRef.current)
+      audio.pause()
+      audio.removeEventListener("timeupdate", onTime)
+      audio.removeEventListener("loadedmetadata", onMeta)
+      // Close the context if we made one
+      if (ctxRef.current && ctxRef.current.state !== "closed") {
+        ctxRef.current.close().catch(() => {})
       }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close()
+      audioRef.current = null
+      ctxRef.current = null
+      srcNodeRef.current = null
+      analyserRef.current = null
+      dataArrayRef.current = null
+    }
+  }, [initialUrl])
+
+  // Create AudioContext + graph ONCE (lazy: first play click)
+  const ensureAudioGraph = useCallback(() => {
+    if (ctxRef.current) return
+    const audio = audioRef.current
+    if (!audio) return
+
+    const Ctx = window.AudioContext || window.webkitAudioContext
+    const ctx = new Ctx()
+    ctxRef.current = ctx
+
+    // Important: createMediaElementSource only ONCE for a given element
+    const src = ctx.createMediaElementSource(audio)
+    srcNodeRef.current = src
+
+    const analyser = ctx.createAnalyser()
+    analyser.fftSize = 2048
+    analyserRef.current = analyser
+
+    src.connect(analyser)
+    src.connect(ctx.destination)
+
+    const bufferLen = analyser.frequencyBinCount
+    const data = new Uint8Array(bufferLen)
+    dataArrayRef.current = data
+
+    const tick = () => {
+      if (!analyserRef.current) return
+      analyserRef.current.getByteFrequencyData(data)
+      let sum = 0
+      for (let i = 0; i < data.length; i++) sum += data[i]
+      const avg = sum / data.length // 0..255
+      setAudioLevel(avg / 255)
+      setCurrentTime(audio.currentTime || 0)
+      rafIdRef.current = requestAnimationFrame(tick)
+    }
+
+    rafIdRef.current = requestAnimationFrame(tick)
+  }, [])
+
+  const play = useCallback(async () => {
+    const audio = audioRef.current
+    if (!audio) return
+    ensureAudioGraph()
+    try {
+      // Resume context if needed (Safari/Chrome after user gesture)
+      if (ctxRef.current?.state === "suspended") {
+        await ctxRef.current.resume()
       }
+      await audio.play()
+    } catch (e) {
+      // Swallow AbortError if src changed mid-play
+      if (e?.name !== "AbortError") console.warn(e)
     }
-  }, [initialTrack])
+  }, [ensureAudioGraph])
 
-  const play = () => {
-    if (!audioRef.current) return
-    if (audioCtxRef.current?.state === "suspended") {
-      audioCtxRef.current.resume()
+  const pause = useCallback(() => {
+    audioRef.current?.pause()
+  }, [])
+
+  const setTrack = useCallback((url) => {
+    const audio = audioRef.current
+    if (!audio) return
+    const wasPlaying = !audio.paused
+
+    // Stop current, reset, and set new src — DO NOT recreate the graph
+    audio.pause()
+    audio.currentTime = 0
+    audio.src = url
+    audio.load()
+
+    // Don’t auto-play to avoid AbortError; let the user press Play
+    // If you want to resume automatically after the new track is ready:
+    // audio.oncanplay = () => { if (wasPlaying) play() }
+  }, [])
+
+  const seekTo = useCallback((t) => {
+    if (audioRef.current && Number.isFinite(t)) {
+      audioRef.current.currentTime = t
     }
-    audioRef.current.play()
-  }
+  }, [])
 
-  const pause = () => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-    }
+  return {
+    audioLevel,
+    duration,
+    currentTime,
+    play,
+    pause,
+    setTrack,
+    seekTo,
   }
-
-  const setTrack = (url) => {
-    if (!audioRef.current) return
-    pause()
-    audioRef.current.src = url
-    setDuration(0)
-    setCurrentTime(0)
-    setTrackState(url)
-  }
-
-  const seekTo = (timeSeconds) => {
-    if (!audioRef.current) return
-    const clamped = Math.max(0, Math.min(timeSeconds, duration || audioRef.current.duration || 0))
-    audioRef.current.currentTime = clamped
-    setCurrentTime(clamped)
-  }
-
-  return { audioLevel, play, pause, setTrack, duration, currentTime, seekTo }
 }

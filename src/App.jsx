@@ -10,7 +10,8 @@ import Narration3 from "./assets/Narration3.wav"
 export default function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTrack, setCurrentTrack] = useState("Track 1")
-  const { audioLevel, play, pause, setTrack, duration, currentTime, seekTo } = useAudio(Narration1)
+  const { audioLevel, play, pause, setTrack, duration, currentTime, seekTo } =
+    useAudio(Narration1)
 
   const formatTime = (secs) => {
     if (!secs || !isFinite(secs)) return "0:00"
@@ -36,13 +37,12 @@ export default function App() {
   }
 
   return (
-    <div
-      className="w-screen h-screen relative"
-      style={{ background: "#2B1B38" }}
-    >
+    <div className="w-screen h-screen relative" style={{ background: "#2B1B38" }}>
       {/* Ambient overlays */}
-      <div className="aurora"></div>
+      <div className="aurora" style={{ "--audio": audioLevel }}></div>
+      <div className="halo" style={{ "--audio": audioLevel }}></div>
       <div className="grain"></div>
+      <div className="vignette"></div>
 
       {/* 3D Scene */}
       <Canvas
@@ -65,6 +65,7 @@ export default function App() {
           <Starfield count={2500} depth={120} size={0.012} />
         </group>
 
+        {/* FlowField layered particles */}
         <FlowField audioLevel={audioLevel} />
       </Canvas>
 
@@ -101,7 +102,9 @@ export default function App() {
             </div>
           </div>
           <div className="w-full flex items-center gap-3">
-            <span className="text-white/70 text-xs tabular-nums w-10 text-right">{formatTime(currentTime)}</span>
+            <span className="text-white/70 text-xs tabular-nums w-10 text-right">
+              {formatTime(currentTime)}
+            </span>
             <input
               type="range"
               min={0}
@@ -111,12 +114,12 @@ export default function App() {
               onChange={(e) => seekTo(Number(e.target.value))}
               className="w-80 accent-indraGreen"
             />
-            <span className="text-white/70 text-xs tabular-nums w-10">{formatTime(duration)}</span>
+            <span className="text-white/70 text-xs tabular-nums w-10">
+              {formatTime(duration)}
+            </span>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
-

@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 /* Global visual enhancements: animated aurora + subtle film grain */
 :root {
   --bg-main: #2b1b38; /* indraPurpleMain */
@@ -9,15 +8,20 @@
 html, body, #root {
   width: 100%;
   height: 100%;
+  background: var(--bg-main);
+  margin: 0;
+  overflow: hidden;
 }
 
 body {
+  /* base radial gradients for depth */
   background: radial-gradient(1200px 800px at 20% 20%, #3b294d 0%, rgba(59,41,77,0) 60%),
               radial-gradient(1000px 700px at 80% 15%, #3a5661 0%, rgba(58,86,97,0) 60%),
               radial-gradient(900px 700px at 50% 80%, #3d2f55 0%, rgba(61,47,85,0) 60%),
               #2b1b38;
 }
 
+/* Aurora Overlay */
 .aurora {
   position: absolute;
   inset: 0;
@@ -35,14 +39,15 @@ body {
               radial-gradient(55% 45% at 40% 75%, rgba(171, 255, 115, 0.20), transparent 60%),
               radial-gradient(45% 35% at 70% 65%, rgba(117, 95, 157, 0.18), transparent 60%);
   filter: blur(40px) saturate(115%);
-  animation: auroraShift 24s linear infinite;
   mix-blend-mode: screen;
+  animation: auroraShift 24s linear infinite, auroraColors 80s ease-in-out infinite;
+  opacity: calc(0.5 + var(--audio, 0) * 0.4);
 }
 
 .aurora::after {
-  animation-duration: 36s;
+  animation-duration: 36s, 120s;
   transform: scale(1.05) rotate(8deg);
-  opacity: 0.8;
+  opacity: calc(0.3 + var(--audio, 0) * 0.3);
 }
 
 @keyframes auroraShift {
@@ -53,11 +58,46 @@ body {
   100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
 }
 
+@keyframes auroraColors {
+  0% { filter: hue-rotate(0deg); }
+  25% { filter: hue-rotate(25deg); }
+  50% { filter: hue-rotate(45deg); }
+  75% { filter: hue-rotate(25deg); }
+  100% { filter: hue-rotate(0deg); }
+}
+
+/* Central Halo Glow */
+.halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70vmin;
+  height: 70vmin;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(171, 255, 115, 0.25), transparent 70%);
+  filter: blur(120px);
+  mix-blend-mode: lighten;
+  opacity: calc(0.15 + var(--audio, 0) * 0.7);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Subtle vignette to focus */
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0,0,0,0) 70%, rgba(43,27,56,0.7) 100%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Film grain overlay */
 .grain {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.04;
+  opacity: 0.05;
   mix-blend-mode: overlay;
   background-image:
     radial-gradient(circle at 10% 10%, rgba(255,255,255,0.08) 0.5px, transparent 0.6px),
@@ -73,5 +113,3 @@ body {
   50% { transform: translate3d(-1%, 1%, 0); }
   100% { transform: translate3d(0,0,0); }
 }
-
-
