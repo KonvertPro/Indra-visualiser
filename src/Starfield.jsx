@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 
-export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73", "#8ECCD9", "#A872C0"], size = 0.01 }) {
+export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73", "#8ECCD9", "#A872C0"], size = 0.01, audioLevel = 0 }) {
   const pointsRef = useRef()
   const materialRef = useRef()
 
@@ -29,13 +29,16 @@ export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73
   useFrame((state) => {
     const t = state.clock.getElapsedTime()
     if (pointsRef.current) {
-      const speed = 0.0015
+      const beat = Math.min(Math.max(audioLevel, 0), 1)
+      const base = 0.0015
+      const speed = base * (1 + beat * 2.5)
       pointsRef.current.rotation.y += speed
     }
     if (materialRef.current) {
+      const beat = Math.min(Math.max(audioLevel, 0), 1)
       const baseSize = size
-      materialRef.current.size = baseSize
-      materialRef.current.opacity = 0.6
+      materialRef.current.size = baseSize * (1 + beat * 0.6)
+      materialRef.current.opacity = 0.45 + beat * 0.35
       materialRef.current.needsUpdate = true
     }
   })
@@ -68,5 +71,4 @@ export default function Starfield({ count = 2000, depth = 80, colors = ["#ABFF73
     </points>
   )
 }
-
 

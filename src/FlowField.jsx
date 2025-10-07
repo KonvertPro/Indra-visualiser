@@ -9,6 +9,7 @@ export default function FlowField({
   baseSpeed = 0.05,     // keep very slow for ambient feel
   particleSize = 0.015,
   noiseShift = 0,
+  audioLevel = 0,
 }) {
   const geometryRef = useRef()
   const simplex = useMemo(() => new SimplexNoise(), [])
@@ -62,10 +63,22 @@ export default function FlowField({
     if (!geo) return
 
     const pos = geo.attributes.position.array
-    const speed = baseSpeed
+    // Subtle audio reactivity: speed, size and tint respond to audioLevel
+    const beat = Math.min(Math.max(audioLevel, 0), 1)
+    const speed = baseSpeed * (0.6 + beat * 1.2)
     const noiseScale = 0.35
     const timeScale = 0.1
     const maxExtent = area
+
+    // Material pulse on audio
+    if (material) {
+      material.size = particleSize * (1 + beat * 0.9)
+      material.opacity = 0.35 + beat * 0.5
+      // slight hue shift to add life while preserving brand colors
+      const hueShift = (0.62 + beat * 0.08 + (t * 0.01) % 1) % 1
+      material.color.setHSL(hueShift, 0.35, 0.75)
+      material.needsUpdate = true
+    }
 
     for (let i = 0; i < pos.length; i += 3) {
       const x = pos[i]
@@ -82,7 +95,8 @@ export default function FlowField({
 
       let nxp = x + dx
       let nyp = y + dy
-      let nzp = THREE.MathUtils.clamp(z + (nx + ny) * 0.001, -0.08, 0.08)
+      // z jitter subtly increases with audio
+      let nzp = THREE.MathUtils.clamp(z + (nx + ny) * (0.001 + beat * 0.0015), -0.08, 0.08)
 
       // Wrap-around bounds
       if (nxp > maxExtent) nxp = -maxExtent

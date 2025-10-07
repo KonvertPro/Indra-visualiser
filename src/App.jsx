@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber"
 import { useState } from "react"
 import FlowField from "./FlowField"
 import Starfield from "./Starfield"
+import CameraRig from "./CameraRig"
 import useAudio from "./useAudio"
 import Narration1 from "./assets/Narration1.wav"
 import Narration2 from "./assets/Narration2.wav"
@@ -62,11 +63,16 @@ export default function App() {
 
         {/* Starfield far background */}
         <group position={[0, 0, -10]}>
-          <Starfield count={2500} depth={120} size={0.012} />
+          <Starfield count={2500} depth={120} size={0.012} audioLevel={audioLevel} />
         </group>
 
-        {/* FlowField layered particles */}
-        <FlowField audioLevel={audioLevel} />
+        {/* Layered FlowFields */}
+        <FlowField count={4000} area={5.5} baseSpeed={0.02} particleSize={0.015} audioLevel={audioLevel} />
+        <FlowField count={3000} area={6.0} baseSpeed={0.04} particleSize={0.01} audioLevel={audioLevel} />
+        <FlowField count={5000} area={4.5} baseSpeed={0.015} particleSize={0.008} audioLevel={audioLevel} />
+
+        {/* Subtle camera motion tied to audio */}
+        <CameraRig audioLevel={audioLevel} />
       </Canvas>
 
       {/* Controls */}
