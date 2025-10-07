@@ -105,8 +105,8 @@ export default function App() {
 
       {/* Controls */}
       <div className="absolute left-0 right-0 flex justify-center z-20 pb-[calc(env(safe-area-inset-bottom)+1rem)] bottom-0">
-        <div className="backdrop-blur-xl bg-white/10 border border-white/15 rounded-2xl shadow-2xl px-4 py-3 sm:px-6 sm:py-4 flex flex-col items-center gap-2 sm:gap-3 w-[min(92vw,34rem)]">
-          <p className="text-white/90 text-sm sm:text-base">{currentTrack}</p>
+        <div className="backdrop-blur-xl bg-indraPurpleTer/30  rounded-2xl shadow-2xl px-4 py-3 sm:px-6 sm:py-4 flex flex-col items-center gap-2 sm:gap-3 w-[min(92vw,34rem)]">
+          <p className="text-white/90 text-sm sm:text-base text-center">{currentTrack}</p>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
             <button
               onClick={togglePlay}
@@ -115,16 +115,16 @@ export default function App() {
               {isPlaying ? "Pause" : "Play"}
             </button>
             {/* Mandala toggle */}
-            <div className="flex rounded-lg overflow-hidden border border-white/15">
+            <div className="flex rounded-lg overflow-hidden border border-indraPurpleSec/40">
               <button
                 onClick={() => setMandalaMode("petal")}
-                className={`px-3 py-2 text-xs sm:text-sm transition ${mandalaMode === "petal" ? "bg-white/20 text-white" : "bg-white/5 text-white/70 hover:bg-white/10"}`}
+                className={`px-3 py-2 text-xs sm:text-sm transition ${mandalaMode === "petal" ? "bg-indraPurpleSec text-white" : "bg-indraPurpleTer/60 text-white/80 hover:bg-indraPurpleTer/70"}`}
               >
                 Petals
               </button>
               <button
                 onClick={() => setMandalaMode("circle")}
-                className={`px-3 py-2 text-xs sm:text-sm transition ${mandalaMode === "circle" ? "bg-white/20 text-white" : "bg-white/5 text-white/70 hover:bg-white/10"}`}
+                className={`px-3 py-2 text-xs sm:text-sm transition ${mandalaMode === "circle" ? "bg-indraPurpleSec text-white" : "bg-indraPurpleTer/60 text-white/80 hover:bg-indraPurpleTer/70"}`}
               >
                 Circles
               </button>
@@ -150,7 +150,7 @@ export default function App() {
               </button>
             </div>
           </div>
-          <div className="w-full flex items-center gap-2 sm:gap-3">
+          <div className="w-full flex items-center justify-center gap-2 sm:gap-3">
             <span className="text-white/70 text-xs tabular-nums w-10 text-right hidden sm:block">
               {formatTime(currentTime)}
             </span>

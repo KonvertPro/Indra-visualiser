@@ -4,9 +4,9 @@ import * as THREE from "three"
 
 // Simple overlapping circles mandala:
 // - 1 central circle (steady)
-// - 5 outer circles arranged evenly around, scaling smoothly with audio
+// - 7 outer circles arranged evenly around
 
-export default function CircleMandala({ audioLevel = 0 }) {
+export default function CircleMandala({ audioLevel: _audioLevel = 0 }) {
   const groupRef = useRef()
   const outerScaleRef = useRef(1)
   const circleRefs = useRef([])
@@ -17,22 +17,18 @@ export default function CircleMandala({ audioLevel = 0 }) {
   // Shared circle geometry
   const circleGeom = useMemo(() => new THREE.CircleGeometry(1, 128), [])
 
-  const outerMat = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.20, // softer outer petals
-        depthWrite: false,
-        blending: THREE.NormalBlending,
-      }),
-    []
-  )
+  // Indra brand palette (from tailwind.config.js)
+  const indraGreen = "#ABFF73"
+  const indraPurpleSec = "#A872C0"
+  const indraBlue = "#8ECCD9"
+  const indraPurpleTer = "#755F9D"
+  const PALETTE = [indraGreen, indraPurpleSec, indraBlue, indraPurpleTer]
+
 
   // Layout: 5 outer positions (72° apart)
-  const outerPositions = useMemo(() => {
+  const outerPositions = useMemo(() => { 
     const pts = []
-    const ringRadius = isMobile ? 0.85 : 1.0 // distance from center (in circle radii)
+    const ringRadius = isMobile ? 0.65 : 1.0 // distance from center (smaller on phones)
     for (let i = 0; i < 7; i++) {
       const a = (i / 7) * Math.PI * 2
       pts.push([Math.cos(a) * ringRadius, Math.sin(a) * ringRadius, 0])
@@ -46,7 +42,7 @@ export default function CircleMandala({ audioLevel = 0 }) {
     const freq = 0.6
     const cycle = 0.5 - 0.5 * Math.cos(t * freq) // 0..1
     const targetScale = 0.5 + 0.5 * cycle // 0.5..1
-    const radial = cycle // 0..1 radius factor (start/end centered)
+    const radial = cycle // radius factor (start/end centered)
 
     outerScaleRef.current = THREE.MathUtils.damp(outerScaleRef.current, targetScale, 3.2, delta)
 
@@ -71,10 +67,16 @@ export default function CircleMandala({ audioLevel = 0 }) {
   })
 
   return (
-    <group ref={groupRef} frustumCulled={false}>
+    <group ref={groupRef} frustumCulled={false} position={[0, isMobile ? 0.9 : 0.6, 0]} scale={isMobile ? 0.82 : 1}>
       {/* Base circle at center; scales same as others */}
       <mesh ref={(el) => { centerRef.current = el; circleRefs.current[0] = el }} geometry={circleGeom}>
-        <primitive object={outerMat} attach="material" />
+        <meshBasicMaterial
+          color={indraGreen}
+          transparent
+          opacity={0.28}
+          depthWrite={false}
+          blending={THREE.NormalBlending}
+        />
       </mesh>
 
       {/* Seven orbiting circles: rotate around center; each scales 0.5..1 and blooms in/out */}
@@ -85,10 +87,18 @@ export default function CircleMandala({ audioLevel = 0 }) {
           geometry={circleGeom}
           position={p}
         >
-          <primitive object={outerMat} attach="material" />
+          <meshBasicMaterial
+            color={PALETTE[i % PALETTE.length]}
+            transparent
+            opacity={0.2}
+            depthWrite={false}
+            blending={THREE.NormalBlending}
+          />
         </mesh>
       ))}
     </group>
   )
 }
+
+
 

@@ -113,3 +113,8 @@ body {
   50% { transform: translate3d(-1%, 1%, 0); }
   100% { transform: translate3d(0,0,0); }
 }
+
+/* Ensure sliders use brand green across browsers */
+input[type="range"] {
+  accent-color: #ABFF73; /* indraGreen */
+}
