@@ -3,6 +3,8 @@ import { useEffect, useState } from "react"
 import FlowField from "./FlowField"
 import Starfield from "./Starfield"
 import CameraRig from "./CameraRig"
+import Mandala from "./Mandala"
+import CircleMandala from "./CircleMandala"
 import useAudio from "./useAudio"
 import Narration1 from "./assets/Narration1.wav"
 import Narration2 from "./assets/Narration2.wav"
@@ -11,6 +13,7 @@ import Narration3 from "./assets/Narration3.wav"
 export default function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTrack, setCurrentTrack] = useState("Track 1")
+  const [mandalaMode, setMandalaMode] = useState("petal") // 'petal' | 'circle'
   const { audioLevel, play, pause, setTrack, duration, currentTime, seekTo } =
     useAudio(Narration1)
 
@@ -84,6 +87,13 @@ export default function App() {
           />
         </group>
 
+        {/* Mandala centerpiece (toggleable) */}
+        {mandalaMode === "petal" ? (
+          <Mandala audioLevel={audioLevel} />
+        ) : (
+          <CircleMandala audioLevel={audioLevel} />
+        )}
+
         {/* Layered FlowFields */}
         <FlowField count={isMobile ? 2200 : 4000} area={5.5} baseSpeed={0.02} particleSize={0.015} audioLevel={audioLevel} />
         <FlowField count={isMobile ? 1800 : 3000} area={6.0} baseSpeed={0.04} particleSize={0.01} audioLevel={audioLevel} />
@@ -104,6 +114,21 @@ export default function App() {
             >
               {isPlaying ? "Pause" : "Play"}
             </button>
+            {/* Mandala toggle */}
+            <div className="flex rounded-lg overflow-hidden border border-white/15">
+              <button
+                onClick={() => setMandalaMode("petal")}
+                className={`px-3 py-2 text-xs sm:text-sm transition ${mandalaMode === "petal" ? "bg-white/20 text-white" : "bg-white/5 text-white/70 hover:bg-white/10"}`}
+              >
+                Petals
+              </button>
+              <button
+                onClick={() => setMandalaMode("circle")}
+                className={`px-3 py-2 text-xs sm:text-sm transition ${mandalaMode === "circle" ? "bg-white/20 text-white" : "bg-white/5 text-white/70 hover:bg-white/10"}`}
+              >
+                Circles
+              </button>
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={() => handleTrackChange(Narration1, "Track 1")}
