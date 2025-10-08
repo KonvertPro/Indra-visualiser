@@ -6,9 +6,9 @@ import CameraRig from "./CameraRig"
 import Mandala from "./Mandala"
 import CircleMandala from "./CircleMandala"
 import useAudio from "./useAudio"
-import Narration1 from "./assets/Narration1.wav"
-import Narration2 from "./assets/Narration2.wav"
-import Narration3 from "./assets/Narration3.wav"
+import Narration1 from "./assets/Narration2.mp3"
+import Narration2 from "./assets/Narration1.mp3"
+import Narration3 from "./assets/Narration3.mp3"
 
 export default function App() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -103,8 +103,18 @@ export default function App() {
         <CameraRig audioLevel={audioLevel} />
       </Canvas>
 
+     {/* Top-left back button */}
+      <div className="absolute top-0 left-0 z-30 pt-[calc(env(safe-area-inset-top)+0.75rem)] pl-[calc(env(safe-area-inset-left)+0.75rem)]">
+        <a
+          href="https://indra.clinic/full-launch-home?editSite"
+          className="inline-flex items-center rounded-xl border border-white/10 backdrop-blur-md bg-indraPurpleTer/30 hover:bg-indraPurpleTer/50 text-white shadow-lg transition px-3 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm"
+        >
+          Back to Indra
+        </a>
+      </div>
+
       {/* Controls */}
-      <div className="absolute left-0 right-0 flex justify-center z-20 pb-[calc(env(safe-area-inset-bottom)+1rem)] bottom-0">
+      <div className="absolute left-0 right-0 flex justify-center z-20 pb-[calc(env(safe-area-inset-bottom)+1rem)] bottom-0">␊
         <div className="backdrop-blur-xl bg-indraPurpleTer/30  rounded-2xl shadow-2xl px-4 py-3 sm:px-6 sm:py-4 flex flex-col items-center gap-2 sm:gap-3 w-[min(92vw,34rem)]">
           <p className="text-white/90 text-sm sm:text-base text-center">{currentTrack}</p>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">

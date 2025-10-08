@@ -13,6 +13,7 @@ export default function CircleMandala({ audioLevel: _audioLevel = 0 }) {
   const centerRef = useRef()
   const { size } = useThree()
   const isMobile = size.width < 640
+  const isTablet = size.width >= 640 && size.width < 1024
 
   // Shared circle geometry
   const circleGeom = useMemo(() => new THREE.CircleGeometry(1, 128), [])
@@ -67,7 +68,12 @@ export default function CircleMandala({ audioLevel: _audioLevel = 0 }) {
   })
 
   return (
-    <group ref={groupRef} frustumCulled={false} position={[0, isMobile ? 0.9 : 0.6, 0]} scale={isMobile ? 0.82 : 1}>
+    <group
+      ref={groupRef}
+      frustumCulled={false}
+      position={[0, isMobile ? 0.9 : isTablet ? 0.6 : 0, 0]}
+      scale={isMobile ? 0.82 : 1}
+    >
       {/* Base circle at center; scales same as others */}
       <mesh ref={(el) => { centerRef.current = el; circleRefs.current[0] = el }} geometry={circleGeom}>
         <meshBasicMaterial
